@@ -35,6 +35,22 @@ bot.on('message', async (msg) => {
     }
 });
 
+bot.on('message', async (msg) => {
+    // --- ယာယီထည့်ထားသော Code (ID သိသွားပါက ပြန်ဖျက်ရန်) ---
+    bot.sendMessage(msg.chat.id, `${msg.from.first_name} ရဲ့ User ID ကတော့ : ${msg.from.id} ပါ`);
+    // ---------------------------------------------------
+
+    // အောက်က Code တွေက မူလအတိုင်း ဆက်ထားပါ
+    if (msg.from.id === TARGET_USER_1 || msg.from.id === TARGET_USER_2) {
+        await BotData.findOneAndUpdate(
+            { id: 'bot_data' }, 
+            { last_active_time: new Date() }, 
+            { upsert: true }
+        );
+        console.log("Activity detected from target users. Timer reset.");
+    }
+});
+
 // ၅ မိနစ် တစ်ကြိမ် ၂၄ နာရီပြည့်/မပြည့် စစ်ဆေးမည်
 cron.schedule('*/5 * * * *', async () => {
     const data = await BotData.findOne({ id: 'bot_data' });
