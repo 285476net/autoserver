@@ -51,19 +51,21 @@ bot.on('message', async (msg) => {
     }
 });
 
-// ၅ မိနစ် တစ်ကြိမ် ၂၄ နာရီပြည့်/မပြည့် စစ်ဆေးမည်
-cron.schedule('*/5 * * * *', async () => {
+// ၁ မိနစ် တစ်ကြိမ် စစ်ဆေးမည်
+cron.schedule('* * * * *', async () => {
     const data = await BotData.findOne({ id: 'bot_data' });
     if (!data) {
-        await BotData.create({ id: 'bot_data' }); // ပထမဆုံးအကြိမ် DB တည်ဆောက်ခြင်း
+        await BotData.create({ id: 'bot_data' }); 
         return;
     }
 
     const now = new Date();
-    const diffHours = Math.abs(now - data.last_active_time) / 36e5;
+    // နာရီအစား မိနစ်နဲ့ တွက်ပါမယ်
+    const diffMinutes = Math.abs(now - data.last_active_time) / 60000;
 
-    if (diffHours >= 24) {
-        console.log("24 hours passed. Forwarding message ID:", data.current_msg_id);
+    // ၂၄ နာရီအစား ၂ မိနစ် ပြည့်တာနဲ့ Post ကူးပါမယ်
+    if (diffMinutes >= 2) {
+        console.log("2 minutes passed. Forwarding message ID:", data.current_msg_id);
         try {
             await bot.copyMessage(CHANNEL_B, CHANNEL_A, data.current_msg_id);
             
@@ -77,7 +79,6 @@ cron.schedule('*/5 * * * *', async () => {
             console.log("Message copied successfully.");
         } catch (error) {
             console.log("Message not found or error. Skipping ID:", data.current_msg_id);
-            // Message ဖျက်ခံရလျှင် ကျော်သွားရန်
             await BotData.findOneAndUpdate(
                 { id: 'bot_data' }, 
                 { $inc: { current_msg_id: 1 } }
